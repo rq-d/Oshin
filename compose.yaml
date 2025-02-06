@@ -1,0 +1,7 @@
+services:
+  UbuntuROS:
+    image: frdmrobotics/playground
+    volumes:
+      - ./app:/root/workspace
+    # command: bash -c "cd /root/workspace && python somepythonfile.py"
+    tty: true
