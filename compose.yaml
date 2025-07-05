@@ -1,7 +1,23 @@
 services:
   UbuntuROS:
-    image: frdmrobotics/playground
+    image: arm64v8/ros
     volumes:
       - ./app:/root/workspace
-    # command: bash -c "cd /root/workspace && python somepythonfile.py"
+    command: bash -c "cd /root/workspace && echo "holamundo!" && python3 somepythonfile.py"
     tty: true
+
+  gzweb:
+    image: vasilescur/gzweb-rosssh
+    tty: true
+    ports:
+      - 8080:8080
+# Usage
+# First, do:
+# docker pull vasilescur/gzweb-rosssh
+# Then, run with:
+# docker run -t -d -p 8080:8080 gzweb-rosssh
+# Use your browser to access the running web interface at localhost:8080.
+# Building
+# To build the image, run:
+# docker build -t vasilescur/gzweb-rosssh .
+
