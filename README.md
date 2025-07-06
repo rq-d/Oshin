@@ -33,3 +33,5 @@ must be done every new shell or added to `~/.bashrc`
 source /opt/ros/rolling/setup.bash
 export ROS_DOMAIN_ID=99 
 ````
+
+`ros2 run turtlesim turtlesim_node -platform offscreen`
