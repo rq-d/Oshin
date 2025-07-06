@@ -1,16 +1,21 @@
 services:
-  UbuntuROS:
-    image: arm64v8/ros
+  oshin:
+    # image: arm64v8/ros
+    image: oshin:latest
     volumes:
       - ./app:/root/workspace
-    command: bash -c "cd /root/workspace && echo "holamundo!" && python3 somepythonfile.py"
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    environment:
+      - DISPLAY=${DISPLAY}
+    command: bash -c "cd /root/workspace && echo "hola_mundo!" && tail -F anything"
     tty: true
-
+    
   gzweb:
     image: vasilescur/gzweb-rosssh
     tty: true
     ports:
       - 8080:8080
+
 # Usage
 # First, do:
 # docker pull vasilescur/gzweb-rosssh
