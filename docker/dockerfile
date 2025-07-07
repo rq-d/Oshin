@@ -1,5 +1,0 @@
-FROM arm64v8/ros:rolling-perception-noble
-
-RUN echo "source /opt/ros/rolling/setup.bash" >> ~/.bashrc && echo "export ROS_DOMAIN_ID=99" >> ~/.bashrc
-
-RUN apt update -y && apt install ros-rolling-turtlesim -y

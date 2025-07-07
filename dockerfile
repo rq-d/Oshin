@@ -1,0 +1,33 @@
+FROM ardupilot/ardupilot-dev-ros:latest
+
+# To make installation easy, we will clone the required repositories using vcs and a ros2.repos files:
+RUN mkdir -p /root/ardu_ws/src \
+  && cd /root/ardu_ws \
+  && vcs import --recursive --input  https://raw.githubusercontent.com/ArduPilot/ardupilot/master/Tools/ros2/ros2.repos src
+
+# Now update all dependencies:
+RUN cd /root/ardu_ws \
+  && apt update  \
+  && rosdep update \ 
+  && cat /opt/ros/humble/setup.bash \
+  && bash -c "cd /root/ardu_ws && source /opt/ros/humble/setup.bash" \
+  && rosdep install --from-paths src --ignore-src -r -y 
+
+# Installing the MicroXRCEDDSGen build dependency:
+RUN sudo apt install default-jre \
+  && cd /root/ardu_ws \
+  && git clone --recurse-submodules https://github.com/ardupilot/Micro-XRCE-DDS-Gen.git \
+  && cd Micro-XRCE-DDS-Gen \
+  && ./gradlew assemble \
+  && echo "export PATH=\$PATH:$PWD/scripts" >> ~/.bashrc 
+
+# These are some tests in which one dds fails, but hasnt caused an issue so far
+# RUN cd /root/ardu_ws \
+#   && colcon build --packages-up-to ardupilot_dds_tests --event-handlers=console_cohesion+
+
+RUN pip install -U MAVProxy
+
+RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+# RUN echo "export ROS_DOMAIN_ID=99" >> ~/.bashrc
+
+RUN apt install vim -y

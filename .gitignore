@@ -1,4 +1,5 @@
 iq_sim/
 log/
-__pycache__/
+__pycache__/*
+/__pycache__
 *.pyc

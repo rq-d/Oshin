@@ -35,3 +35,15 @@ export ROS_DOMAIN_ID=99
 ````
 
 `ros2 run turtlesim turtlesim_node -platform offscreen`
+
+ardupilot
+
+first build default ardupilot image with these instructions 
+`https://ardupilot.org/dev/docs/ros2.html#installation-docker`
+`https://ardupilot.org/dev/docs/ros2-gazebo.html#ros2-gazebo`
+
+second build docker image with the one in this repo and name it as so 
+`docker build -t ardunode:latest .`
+
+third run the containers
+`docker-compose up`
