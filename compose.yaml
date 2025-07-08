@@ -1,15 +1,17 @@
 services:
-  oshin:
-    image: ardunode:latest
-    # network_mode: host
-    command: bash -c "echo "hola_mundo!" && cd /root/ardu_ws/ && colcon build --packages-up-to ardupilot_sitl && source install/setup.bash && ros2 launch ardupilot_sitl sitl_dds_udp.launch.py transport:=udp4 synthetic_clock:=True wipe:=False model:=quad speedup:=1 slave:=0 instance:=0 defaults:=$(ros2 pkg prefix ardupilot_sitl)/share/ardupilot_sitl/config/default_params/copter.parm,$(ros2 pkg prefix ardupilot_sitl)/share/ardupilot_sitl/config/default_params/dds_udp.parm sim_address:=127.0.0.1 master:=tcp:127.0.0.1:5760 sitl:=127.0.0.1:5501"
+  node:
+    image: ros2-mavros-ardupilot:latest
+    network_mode: host
+    command: bash -c "echo "holiiii" && tail -f /dev/null"
     tty: true
-  
-  oshin2:
-    image: ardunode:latest
-    # network_mode: host
-    command: bash -c "cd /root/ardu_ws/ && colcon build --packages-up-to ardupilot_sitl && tail -f /dev/null"
-    tty: true
+
+# start Ardupilot SITL
+# cd ~/ardupilot && ./Tools/autotest/sim_vehicle.py -v ArduCopter -f gazebo-iris --console --map
+
+# start Mavros
+# source ~/ros2_ws/install/setup.bash
+# ros2 launch mavros px4.launch fcu_url:=udp://127.0.0.1:14550
+
 
 
   # gzweb:

@@ -1,33 +1,131 @@
-FROM ardupilot/ardupilot-dev-ros:latest
+# # Base image with ROS 2 Humble
+# # FROM arm64v8/ros:humble-desktop
+# FROM osrf/ros:humble-desktop
+# # Set environment variables
+# ENV DEBIAN_FRONTEND=noninteractive
+# ENV ROS_DISTRO=humble
 
-# To make installation easy, we will clone the required repositories using vcs and a ros2.repos files:
-RUN mkdir -p /root/ardu_ws/src \
-  && cd /root/ardu_ws \
-  && vcs import --recursive --input  https://raw.githubusercontent.com/ArduPilot/ardupilot/master/Tools/ros2/ros2.repos src
+# # Install system dependencies
+# RUN apt-get update && apt-get install -y \
+#   git \
+#   python3-pip \
+#   python3-colcon-common-extensions \
+#   libeigen3-dev \
+#   libgeographic-dev \
+#   geographiclib-tools \
+#   curl \
+#   wget \
+#   sudo \
+#   gnupg2 \
+#   lsb-release \
+#   nano \
+#   build-essential \
+#   python3-vcstool \
+#   && rm -rf /var/lib/apt/lists/*
 
-# Now update all dependencies:
-RUN cd /root/ardu_ws \
-  && apt update  \
-  && rosdep update \ 
-  && cat /opt/ros/humble/setup.bash \
-  && bash -c "cd /root/ardu_ws && source /opt/ros/humble/setup.bash" \
-  && rosdep install --from-paths src --ignore-src -r -y 
+# # Setup ROS 2 environment
+# SHELL ["/bin/bash", "-c"]
+# RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc
 
-# Installing the MicroXRCEDDSGen build dependency:
-RUN sudo apt install default-jre \
-  && cd /root/ardu_ws \
-  && git clone --recurse-submodules https://github.com/ardupilot/Micro-XRCE-DDS-Gen.git \
-  && cd Micro-XRCE-DDS-Gen \
-  && ./gradlew assemble \
-  && echo "export PATH=\$PATH:$PWD/scripts" >> ~/.bashrc 
+# # Create workspace
+# WORKDIR /root/ros2_ws/src
 
-# These are some tests in which one dds fails, but hasnt caused an issue so far
-# RUN cd /root/ardu_ws \
-#   && colcon build --packages-up-to ardupilot_dds_tests --event-handlers=console_cohesion+
+# # Clone MAVROS for ROS 2
+# RUN git clone -b ros2 https://github.com/mavlink/mavros.git
 
-RUN pip install -U MAVProxy
+# # Install GeographicLib dataset
+# RUN geographiclib-get-geoids egm96-5
 
-RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
-# RUN echo "export ROS_DOMAIN_ID=99" >> ~/.bashrc
+# # Go to workspace root and install dependencies
+# WORKDIR /root/ros2_ws
 
-RUN apt install vim -y
+# # RUN rosdep init # source file already exists
+
+# RUN apt-get update && apt-get install -y \
+#   curl gnupg2 lsb-release && \
+#   curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add - && \
+#   echo "deb http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list && \
+#   apt-get update
+# RUN apt-get update && apt-get install -y \
+#   ros-humble-mavlink \
+#   ros-humble-diagnostic-updater \
+#   ros-humble-eigen-stl-containers \
+#   ros-humble-geographic-msgs \
+#   python3-click \
+#   libasio-dev
+
+# RUN rosdep update 
+# RUN rosdep install --from-paths src --ignore-src -r -y
+
+# # Build the workspace
+# RUN . /opt/ros/${ROS_DISTRO}/setup.bash && \
+#   colcon build --symlink-install
+
+# # Source setup on container start
+# RUN echo "source /root/ros2_ws/install/setup.bash" >> ~/.bashrc
+
+# # Install ArduPilot dependencies
+# WORKDIR /root
+# RUN git clone https://github.com/ArduPilot/ardupilot.git && \
+#   cd ardupilot && \
+#   git submodule update --init --recursive && \
+#   ./waf configure --board sitl && \
+#   ./waf build
+
+# # Default command: bash shell
+# CMD ["/bin/bash"]
+
+FROM ghcr.io/sloretz/ros:humble-ros-base
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV ROS_DISTRO=humble
+
+# Install required apt dependencies
+RUN apt-get update && apt-get install -y \
+  git python3-pip python3-colcon-common-extensions \
+  libeigen3-dev libgeographic-dev geographiclib-tools \
+  python3-vcstool python3-click libasio-dev \
+  build-essential wget nano \
+  ros-humble-mavlink \
+  ros-humble-diagnostic-updater \
+  ros-humble-eigen-stl-containers \
+  ros-humble-geographic-msgs && \
+  rm -rf /var/lib/apt/lists/*
+
+# Install Python tools for MAVLink and MAVProxy
+RUN pip3 install pymavlink MAVProxy
+
+# Set up GeographicLib datasets
+RUN geographiclib-get-geoids egm96-5
+
+# Create and build MAVROS workspace
+WORKDIR /root/ros2_ws/src
+RUN git clone -b ros2 https://github.com/mavlink/mavros.git
+
+# Clone angles manually into the workspace
+WORKDIR /root/ros2_ws/src
+RUN git clone https://github.com/ros/angles.git -b ros2
+
+WORKDIR /root/ros2_ws
+RUN rosdep update && \
+  rosdep install --from-paths src --ignore-src -r -y
+
+RUN bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash && colcon build --symlink-install --parallel-workers 1"
+
+
+RUN python3 -m pip install --no-cache-dir pexpect
+
+# Clone and build ArduPilot SITL
+WORKDIR /root
+RUN git clone https://github.com/ArduPilot/ardupilot.git && \
+  cd ardupilot && \
+  git submodule update --init --recursive && \
+  ./waf configure --board sitl && \
+  ./waf build
+
+# Add sourcing to bashrc
+RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc && \
+  echo "source /root/ros2_ws/install/setup.bash" >> ~/.bashrc
+
+WORKDIR /root
+CMD ["/bin/bash"]
