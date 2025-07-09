@@ -4,10 +4,6 @@ services:
     image: ardunode:latest
     # volumes:
     #   - ./archive/takeoffmove.py:/root/ardu_ws/takeoffmove.py
-    network: host
-    ports:
-      - "14550:14550/udp"
-      - "5760:5760/tcp"
     command: bash -c "cd /root/ardu_ws/ && source ~/ardu_ws/install/setup.bash && ros2 launch ardupilot_sitl sitl_dds_udp.launch.py transport:=udp4 synthetic_clock:=True wipe:=False model:=quad speedup:=1 slave:=0 instance:=0 defaults:=$(ros2 pkg prefix ardupilot_sitl)/share/ardupilot_sitl/config/default_params/copter.parm,$(ros2 pkg prefix ardupilot_sitl)/share/ardupilot_sitl/config/default_params/dds_udp.parm sim_address:=127.0.0.1 master:=tcp:127.0.0.1:5760 sitl:=127.0.0.1:5501"
     # command: bash -c "cd /root/ardu_ws/ && source ~/ardu_ws/install/setup.bash && ros2 launch ardupilot_sitl sitl_dds_udp.launch.py transport:=udp4 synthetic_clock:=True wipe:=False model:=quad speedup:=1 slave:=0 instance:=0 defaults:=$(ros2 pkg prefix ardupilot_sitl)/share/ardupilot_sitl/config/default_params/copter.parm,$(ros2 pkg prefix ardupilot_sitl)/share/ardupilot_sitl/config/default_params/dds_udp.parm sim_address:=0.0.0.0 master:=tcp:0.0.0.0:5760 sitl:=0.0.0.0:5501"
 
