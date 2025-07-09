@@ -5,11 +5,17 @@ Docker-compose file runs two containers; one with ROS and another with Ubuntu. S
 
 ## Quickstart
 ### CLI
+if first time; make the new docker image
+````
+cd docker
+docker build -t ardunode:latest .
+````
+
 To run:
 ````
 docker-compose up
 docker exec -it oshin-oshin1-1 bash
-mavproxy.py --master=14550
+mavproxy.py --aircraft test --master=:14550
 ````
 
 Now we have console from which we can send mavlink commands to control the vehicle ie;
@@ -19,10 +25,9 @@ arm throttle
 takeoff 200
 ````
 
-if first time; make the new docker image
+Watch the position change over time in another terminal
 ````
-cd docker
-docker build -t ardunode:latest .
+ros2 topic echo /ap/pose/filtered
 ````
 
 ### Visualization
@@ -46,11 +51,11 @@ export ROS_DOMAIN_ID=99
 ````
 
 ## TODO
-- mount an example python script that does the following
-  - arm copter
-  - takeoff to 200m
-  - move in some direction
-- set up gazebo interface for visualization
-  - try running interface in the ardunode container and publish over network to gzweb
-- switch to a ground or USV platform
-  - might require a local gazebo installation or some config within gzweb interface
+- [ ] mount an example python script that does the following
+  - [ ] arm copter
+  - [ ] takeoff to 200m
+  - [ ] move in some direction
+- [ ] set up gazebo interface for visualization
+  - [ ] try running interface in the ardunode container and publish over network to gzweb
+- [ ] switch to a ground or USV platform
+  - [ ] might require a local gazebo installation or some config within gzweb interface
