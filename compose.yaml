@@ -2,8 +2,8 @@ services:
 
   oshin1:
     image: ardunode:latest
-    volumes:
-      - ./archive/takeoffmove.py:/root/ardu_ws/takeoffmove.py
+    # volumes:
+    #   - ./archive/takeoffmove.py:/root/ardu_ws/takeoffmove.py
     network: host
     ports:
       - "14550:14550/udp"
